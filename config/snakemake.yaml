@@ -1,0 +1,9 @@
+run_id: "pd_smk_v1"
+disease: "Parkinson disease"
+subtype: null
+tissue: "brain"
+disease_id: null
+skip_literature: false
+run_track_a: true
+run_track_b: true
+run_fusion: true

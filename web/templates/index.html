@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D2T - Disease to Target Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+  <nav id="top-nav" class="top-nav hidden">
+    <a href="#/" class="nav-brand">D2T</a>
+    <div class="nav-links">
+      <a href="#/setup" data-nav="setup">Configure</a>
+      <a href="#/pipeline" data-nav="pipeline">Pipeline</a>
+      <a href="#/results" data-nav="results">Results</a>
+      <a href="#/report" data-nav="report">Report</a>
+    </div>
+    <div class="nav-auth">
+      <span id="nav-user-label" class="nav-user hidden"></span>
+      <button type="button" id="btn-auth-open" class="btn btn-ghost btn-sm">Sign in</button>
+      <button type="button" id="btn-auth-logout" class="btn btn-ghost btn-sm hidden">Sign out</button>
+    </div>
+    <span class="nav-version">v{{ version }}</span>
+  </nav>
+
+  <div id="auth-modal" class="auth-modal hidden" aria-hidden="true">
+    <div class="auth-modal-backdrop" id="auth-modal-backdrop"></div>
+    <div class="auth-modal-card glass-card">
+      <button type="button" class="auth-modal-close" id="auth-modal-close" aria-label="Close">&times;</button>
+      <h3 id="auth-modal-title">Sign in</h3>
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-auth-tab="login">Login</button>
+        <button type="button" class="auth-tab" data-auth-tab="register">Register</button>
+      </div>
+      <form id="auth-form">
+        <label class="auth-field hidden" id="auth-name-wrap">
+          <span>Name</span>
+          <input type="text" id="auth-name" autocomplete="name" />
+        </label>
+        <label class="auth-field">
+          <span>Email</span>
+          <input type="email" id="auth-email" required autocomplete="email" />
+        </label>
+        <label class="auth-field">
+          <span>Password</span>
+          <input type="password" id="auth-password" required minlength="8" autocomplete="current-password" />
+        </label>
+        <p id="auth-error" class="auth-error hidden"></p>
+        <button type="submit" class="btn btn-primary btn-block" id="auth-submit">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <section id="page-landing" class="page page-has-bg page-bg-2 page-landing active">
+    <header class="landing-header">
+      <div class="landing-brand">
+        <span class="brand-mark">D2T</span>
+        <span class="brand-tagline">Disease to Target Discovery</span>
+      </div>
+      <span class="landing-version">v{{ version }}</span>
+    </header>
+
+    <div class="landing-shell">
+      <div class="landing-hero glass-card glass-card-hero">
+        <p class="hero-eyebrow">Human disease target discovery platform</p>
+        <p class="hero-kicker">Computational pipeline for CADD-ready target prioritization</p>
+        <h1 class="hero-title">
+          From disease name to ranked <em>actionable</em> targets
+        </h1>
+        <p class="hero-lead">
+          Resolve ontology-backed disease context, collect multi-source gene evidence,
+          and run dual discovery tracks for underexplored known targets and novel candidates.
+        </p>
+
+        <div class="hero-pills">
+          <span class="hero-pill">Open Targets</span>
+          <span class="hero-pill">Europe PMC RAG</span>
+          <span class="hero-pill">STRING network</span>
+        </div>
+
+        <div class="hero-actions">
+          <a href="#/setup" class="btn btn-hero">Start analyzing</a>
+          <a href="#landing-workflow" class="btn btn-ghost btn-hero-secondary">Explore workflow</a>
+        </div>
+
+        <div class="hero-metrics">
+          <div class="metric">
+            <span class="metric-value">2</span>
+            <span class="metric-label">Discovery tracks</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">17</span>
+            <span class="metric-label">Pipeline steps</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">A+B</span>
+            <span class="metric-label">Known + novel</span>
+          </div>
+        </div>
+      </div>
+
+      <section id="landing-workflow" class="landing-section">
+        <div class="section-intro glass-card glass-card-intro">
+          <p class="section-eyebrow">How D2T works</p>
+          <h2 class="section-title">Evidence-first target discovery in three stages</h2>
+          <p class="section-desc">
+            Each stage produces inspectable artifacts so you can trace every ranked target back to data sources.
+          </p>
+        </div>
+
+        <div class="infographic-strip">
+          <article class="info-card glass-card glass-card-step glass-card-teal" data-tilt>
+            <div class="info-step">01</div>
+            <div class="info-icon icon-resolve"></div>
+            <h3>Resolve disease</h3>
+            <p>Map disease, subtype, and tissue to MONDO/EFO ontology identifiers with Open Targets search.</p>
+          </article>
+          <article class="info-card glass-card glass-card-step glass-card-warm" data-tilt>
+            <div class="info-step">02</div>
+            <div class="info-icon icon-collect"></div>
+            <h3>Collect evidence</h3>
+            <p>Merge Open Targets associations with literature RAG gene extraction from Europe PMC abstracts.</p>
+          </article>
+          <article class="info-card glass-card glass-card-step glass-card-dual" data-tilt>
+            <div class="info-step">03</div>
+            <div class="info-icon icon-dual"></div>
+            <h3>Dual-track rank</h3>
+            <p>Track A scores underexplored known targets. Track B expands STRING neighborhoods for novel candidates.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="flow-infographic glass-card glass-card-flow">
+          <div class="section-intro compact">
+            <p class="section-eyebrow">Pipeline map</p>
+            <h2 class="section-title">Foundation to ranked report</h2>
+          </div>
+          <div class="flow-diagram">
+            <div class="flow-box fb-input">Disease input</div>
+            <span class="flow-line"></span>
+            <div class="flow-box fb-core">Foundation<br><small>Steps 1-2</small></div>
+            <span class="flow-line split"></span>
+            <div class="flow-branch">
+              <div class="flow-box fb-a">Track A<br><small>Known targets</small></div>
+              <div class="flow-box fb-b">Track B<br><small>Novel candidates</small></div>
+            </div>
+            <span class="flow-line"></span>
+            <div class="flow-box fb-out">Ranked report</div>
+          </div>
+        </div>
+
+        <div class="landing-footer glass-card glass-card-footer">
+          <p class="footer-label">Integrated data sources</p>
+          <div class="source-badges">
+            <span>Open Targets</span>
+            <span>Europe PMC</span>
+            <span>STRING</span>
+            <span>mygene</span>
+            <span>networkx</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section id="page-setup" class="page page-has-bg page-bg-setup">
+    <div class="page-content page-content-narrow">
+      <header class="page-header panel-card">
+        <span class="step-badge">Step 1 of 4</span>
+        <h2>Choose your approach</h2>
+        <p>Select which discovery track to run, then enter disease context.</p>
+      </header>
+
+      <div class="approach-grid" id="approach-grid">
+        <button type="button" class="approach-card panel-card" data-approach="track_a">
+          <div class="approach-icon ac-a">A</div>
+          <h3>Track A</h3>
+          <p>Underexplored <strong>known</strong> disease-linked targets. Crowdedness, relevance, CADD readiness.</p>
+          <ul><li>A1-A5 scoring</li><li>5 artifact steps</li></ul>
+        </button>
+        <button type="button" class="approach-card panel-card" data-approach="track_b">
+          <div class="approach-icon ac-b">B</div>
+          <h3>Track B</h3>
+          <p><strong>Novel</strong> candidates via STRING PPI expansion and multi-evidence ranking.</p>
+          <ul><li>B1-B10 pipeline</li><li>Network + pathway</li></ul>
+        </button>
+        <button type="button" class="approach-card panel-card selected" data-approach="both">
+          <div class="approach-icon ac-both">A+B</div>
+          <h3>Dual track</h3>
+          <p>Full analysis: both underexplored known targets and novel candidates.</p>
+          <ul><li>Recommended</li><li>Complete picture</li></ul>
+        </button>
+      </div>
+
+      <form id="setup-form" class="setup-form panel-card">
+        <input type="hidden" name="approach" id="approach-input" value="both" />
+        <div class="form-grid">
+          <label class="full">
+            <span>Disease name *</span>
+            <input type="text" name="disease" required placeholder="e.g. Parkinson disease" />
+          </label>
+          <label>
+            <span>Subtype</span>
+            <input type="text" name="subtype" placeholder="e.g. idiopathic" />
+          </label>
+          <label>
+            <span>Tissue</span>
+            <input type="text" name="tissue" placeholder="e.g. brain" />
+          </label>
+          <label>
+            <span>Run ID (optional)</span>
+            <input type="text" name="run_id" placeholder="auto-generated" />
+          </label>
+          <label>
+            <span>Ontology ID override</span>
+            <input type="text" name="disease_id" placeholder="MONDO_... or EFO_..." />
+          </label>
+          <label class="checkbox-row full">
+            <input type="checkbox" name="skip_literature" />
+            <span>Skip literature RAG in Step 2 (Open Targets only, faster - leave unchecked for full collection)</span>
+          </label>
+          <label class="checkbox-row full">
+            <input type="checkbox" name="use_snakemake" />
+            <span>Run via Snakemake orchestrator (DAG-based workflow with incremental reruns)</span>
+          </label>
+        </div>
+        <div class="form-actions">
+          <a href="#/" class="btn btn-ghost">Back</a>
+          <button type="submit" class="btn btn-primary">Launch pipeline</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section id="page-pipeline" class="page page-has-bg page-bg-pipeline">
+    <div class="page-content">
+      <header class="page-header panel-card">
+        <span class="step-badge">Step 2 of 4</span>
+        <h2>Pipeline execution</h2>
+        <p id="pipeline-subtitle">Running analysis...</p>
+      </header>
+
+      <div class="panel-card">
+        <div class="pipeline-status-bar">
+          <div id="pipeline-progress" class="progress-fill" style="width:0%"></div>
+        </div>
+        <div id="pipeline-meta" class="pipeline-meta"></div>
+        <div id="step-timeline" class="step-timeline"></div>
+        <pre id="pipeline-log" class="pipeline-log"></pre>
+        <div class="form-actions" id="pipeline-actions">
+          <a href="#/setup" class="btn btn-ghost">New analysis</a>
+          <a href="#/results" id="btn-to-results" class="btn btn-primary hidden">View results</a>
+          <a href="#/report" id="btn-to-report" class="btn btn-accent hidden">View report</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-results" class="page page-has-bg page-bg-results">
+    <div class="page-content">
+      <header class="page-header panel-card">
+        <span class="step-badge">Step 3 of 4</span>
+        <h2>Runs and artifacts</h2>
+        <p>Browse completed analyses and inspect ranked target tables.</p>
+      </header>
+
+      <div class="panel-card">
+        <div class="results-toolbar">
+          <label>
+            <span>Run</span>
+            <select id="results-run-select"></select>
+          </label>
+          <div class="toolbar-actions">
+            <button type="button" id="btn-download-zip" class="btn btn-ghost btn-sm">Download ZIP</button>
+            <a href="#/report" id="results-report-link" class="btn btn-accent btn-sm">Open report</a>
+          </div>
+        </div>
+        <div id="results-summary" class="results-summary"></div>
+        <div class="artifact-tabs">
+          <button type="button" class="tab active" data-artifact="known_genes">Known genes</button>
+          <button type="button" class="tab" data-artifact="track_a">Track A rank</button>
+          <button type="button" class="tab" data-artifact="track_b">Track B rank</button>
+          <button type="button" class="tab" data-artifact="fusion">Fusion portfolio</button>
+        </div>
+        <div id="results-table" class="table-wrap"></div>
+        <div class="panel-subsection">
+          <h3>Network graph (STRING expansion)</h3>
+          <p class="section-desc">Top candidate nodes and seed edges from Track B Step B1.</p>
+          <div id="network-graph-wrap" class="network-graph-wrap"></div>
+        </div>
+        <div class="panel-subsection">
+          <h3>Target evidence card</h3>
+          <p class="section-desc">Enter a gene symbol from the tables above to inspect literature, track scores, and fusion tier.</p>
+          <div class="evidence-toolbar">
+            <input type="text" id="evidence-gene-input" placeholder="e.g. SNCA" />
+            <button type="button" id="btn-evidence-load" class="btn btn-primary btn-sm">Load evidence</button>
+          </div>
+          <div id="evidence-card" class="evidence-card"><p class="placeholder-text">Select a run and enter a gene symbol.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-report" class="page page-has-bg page-bg-report">
+    <div class="page-content page-content-narrow">
+      <header class="page-header panel-card">
+        <span class="step-badge">Step 4 of 4</span>
+        <h2>Analysis report</h2>
+        <p>Interpretation of top-ranked targets and method context.</p>
+      </header>
+
+      <div class="panel-card">
+        <div class="report-toolbar">
+          <label>
+            <span>Report for run</span>
+            <select id="report-run-select"></select>
+          </label>
+          <div class="toolbar-actions">
+            <button type="button" id="btn-download-pdf" class="btn btn-accent btn-sm">Download PDF</button>
+            <a href="#/results" class="btn btn-ghost btn-sm">Back to tables</a>
+          </div>
+        </div>
+        <div id="report-content" class="report-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <script src="/static/js/app.js?v=5"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+# D2T local / single-server deploy
+#
+# First time:
+#   copy .env.example .env   (then edit if needed)
+#   docker compose up --build -d
+#
+# App:     http://127.0.0.1:8080
+# Health:  http://127.0.0.1:8080/health
+
+services:
+  web:
+    build: .
+    image: d2t:latest
+    container_name: d2t-web
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Sensible defaults; override via .env
+      LITERATURE_RAG_ENABLED: ${LITERATURE_RAG_ENABLED:-true}
+      OPENTARGETS_GRAPHQL_URL: ${OPENTARGETS_GRAPHQL_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      D2T_BOOTSTRAP_EMAIL: ${D2T_BOOTSTRAP_EMAIL:-}
+      D2T_BOOTSTRAP_PASSWORD: ${D2T_BOOTSTRAP_PASSWORD:-}
+    volumes:
+      # Persist registry DB + per-user runs across rebuilds
+      - ./storage:/app/storage
+      # Optional: legacy/CLI outputs and raw API caches
+      - ./outputs:/app/outputs
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s

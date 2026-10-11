@@ -1,0 +1,87 @@
+# Global defaults for the pipeline (override per env or future CLI flags)
+
+species: human
+
+open_targets:
+  graphql_url: https://api.platform.opentargets.org/api/v4/graphql
+  search:
+    entity: disease
+    max_hits: 15
+  associations:
+    page_size: 500
+    # Set to null to fetch all rows reported by Open Targets (can be 10k+)
+    max_rows: 8000
+
+paths:
+  storage_dir: storage
+  outputs_dir: outputs
+  data_raw_dir: data/raw
+  registry_db: storage/registry/d2t_registry.db
+
+# Literature RAG (Europe PMC + TF-IDF chunk retrieval + symbol validation)
+literature_rag:
+  enabled: true
+  # Europe PMC query window (recent literature = “latest” in abstract sense)
+  first_pdate_years_back: 3
+  max_articles: 40
+  page_size: 20
+  # Retrieval: TF-IDF over abstract chunks
+  chunks_per_abstract_max: 12
+  chunk_max_chars: 450
+  top_chunks_global: 80
+  # Gene extraction from top chunks
+  max_genes_per_run: 500
+  # Query string for TF-IDF (targets / mechanism language)
+  retrieval_query: "therapeutic target gene protein pathway drug biomarker novel candidate"
+
+# Track A — known underexplored targets
+track_a:
+  enabled: true
+  top_n_for_analysis: 120
+  crowdedness_weights:
+    publication_count: 0.45
+    approved_drug_flag: 0.25
+    clinical_flag: 0.20
+    ligand_flag: 0.10
+  final_ranking_weights:
+    biological_relevance: 0.35
+    cadd_readiness: 0.25
+    tissue_relevance: 0.20
+    low_crowdedness: 0.20
+  crowded_high_quantile: 0.80
+  crowded_extreme_quantile: 0.95
+
+# Track B — novel candidate discovery
+track_b:
+  enabled: true
+  seed_top_n: 60
+  string_required_score: 400
+  string_partners_per_seed: 40
+  top_candidates_for_scoring: 180
+  final_ranking_weights:
+    network_support: 0.22
+    pathway_relevance: 0.18
+    expression_evidence: 0.18
+    coexpression: 0.13
+    literature_weak_support: 0.09
+    druggability: 0.10
+    tissue_relevance: 0.10
+
+# Tissue-context filter (literature + mygene summary)
+tissue_filter:
+  enabled: true
+  max_genes_for_epmc: 80
+
+# Fusion layer F1 — unified portfolio across tracks
+fusion:
+  enabled: true
+  tier1_track_threshold: 0.65
+  tier1_tissue_threshold: 0.70
+  tier1_cadd_threshold: 0.60
+  tier2_track_threshold: 0.40
+
+# Optional LLM narrative (set OPENAI_API_KEY in .env)
+llm:
+  enabled: true
+  model: gpt-4o-mini
+
