@@ -11,6 +11,10 @@ outputs/*/
 !outputs/.gitkeep
 data/raw/*
 !data/raw/.gitkeep
+data/external/gtex/*
+!data/external/gtex/.gitkeep
+!data/external/gtex/README.md
+!data/external/gtex/SOURCE.txt
 storage/*
 !storage/.gitkeep
 !storage/registry/.gitkeep

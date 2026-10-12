@@ -111,23 +111,28 @@ Output:
 
 ---
 
-## B3 — Co-expression
-Script: `src/stepB3_coexpression.py`
+## B3 — Co-expression / tissue expression
+Script: `src/stepB3_coexpression.py`  
+Helpers: `src/lib/expression/` (`b3.py`, `gtex_lookup.py`, `string_proxy.py`)
 
 Scientific idea:
-- Co-regulation with disease module implies relevance.
+- Candidates expressed in the disease-relevant tissue (and/or near seeds) gain support.
 
-Current implementation (proxy):
-- Uses B1 neighborhood strength as coexpression proxy:
-  - normalized `seed_count`
-  - normalized `mean_string_score`
-  - combined as `coexpression_proxy_score = 0.6*seed + 0.4*score`
+Implementation (config `track_b.b3.provider`):
+1. **hybrid** (default): GTEx median TPM in mapped user tissue + STRING neighborhood blend.
+2. **gtex_tissue**: GTEx primary; STRING only if gene/tissue missing.
+3. **string_proxy**: legacy `0.6*seed_count + 0.4*mean_string_score` only.
+
+Data:
+- Optional local file `data/external/gtex/gene_median_tpm.gct.gz` (see that folder README).
+- If GTEx file is absent, B3 safely falls back to STRING proxy.
 
 Output:
-- `stepB3_coexpression.csv`
+- `stepB3_coexpression.csv` with `coexpression_proxy_score` (B10 contract) plus
+  `b3_method`, optional `tissue_tpm`, `gtex_tissue`, `ensembl_gene_id`.
 
 Future upgrade:
-- Replace proxy with explicit GTEx/GEO/TCGA expression matrices and correlation.
+- Sample-level GTEx correlation of candidate ↔ seed genes (larger matrices).
 
 ---
 

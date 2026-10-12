@@ -64,6 +64,45 @@ def _step2_literature_note(base: Path) -> str | None:
     )
 
 
+def _step_b3_note(base: Path) -> str | None:
+    """Human label: GTEx vs STRING proxy for Track B step B3."""
+    summary_path = base / "artifacts" / "track_b" / "stepB3_summary.json"
+    if summary_path.is_file():
+        try:
+            data = json.loads(summary_path.read_text(encoding="utf-8"))
+            label = data.get("label")
+            if label:
+                return str(label)
+            if data.get("used_gtex"):
+                tissue = data.get("gtex_tissue") or "?"
+                return f"B3: GTEx ({tissue})"
+            return "B3: STRING proxy only (no GTEx)"
+        except Exception:
+            pass
+    # Fallback: inspect CSV b3_method column from older runs
+    csv_path = base / "artifacts" / "track_b" / "stepB3_coexpression.csv"
+    if not csv_path.is_file():
+        return None
+    try:
+        import pandas as pd
+
+        df = pd.read_csv(csv_path, usecols=lambda c: c in ("b3_method", "gtex_tissue"))
+        if "b3_method" not in df.columns:
+            return "B3: legacy (no method column)"
+        counts = df["b3_method"].astype(str).value_counts().to_dict()
+        gtexish = int(counts.get("hybrid", 0)) + int(counts.get("gtex_tissue", 0))
+        if gtexish > 0:
+            tissue = None
+            if "gtex_tissue" in df.columns:
+                nn = df["gtex_tissue"].dropna()
+                if len(nn):
+                    tissue = str(nn.iloc[0])
+            return f"B3: GTEx ({tissue or 'ok'}) — {gtexish}/{len(df)} genes"
+        return "B3: STRING proxy only (no GTEx)"
+    except Exception:
+        return None
+
+
 def run_status(run_id: str) -> dict[str, Any]:
     base = run_dir(run_id)
     if not base.is_dir():
@@ -104,6 +143,10 @@ def run_status(run_id: str) -> dict[str, Any]:
                 note = _step2_literature_note(base)
                 if note:
                     entry["literature"] = note
+            if step["id"] == "stepB3" and done:
+                b3_note = _step_b3_note(base)
+                if b3_note:
+                    entry["b3_note"] = b3_note
             step_status.append(entry)
 
     manifest_data: dict[str, Any] | None = None

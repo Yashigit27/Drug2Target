@@ -48,7 +48,7 @@ PIPELINE_LAYERS = [
         "steps": [
             {"id": "stepB1", "name": "B1 - STRING Expansion", "script": "stepB1_seed_expansion.py", "summary": "PPI network neighbors from top disease seeds.", "outputs": ["track_b/stepB1_candidate_neighbors.csv"], "apis": ["STRING"]},
             {"id": "stepB2", "name": "B2 - Functional Similarity", "script": "stepB2_functional_similarity.py", "summary": "GO / pathway / domain Jaccard vs seeds.", "outputs": ["track_b/stepB2_functional_similarity.csv"], "apis": ["mygene"]},
-            {"id": "stepB3", "name": "B3 - Coexpression", "script": "stepB3_coexpression.py", "summary": "Coexpression proxy from network strength.", "outputs": ["track_b/stepB3_coexpression.csv"]},
+            {"id": "stepB3", "name": "B3 - Coexpression", "script": "stepB3_coexpression.py", "summary": "GTEx tissue expression (hybrid) with STRING fallback.", "outputs": ["track_b/stepB3_coexpression.csv"]},
             {"id": "stepB4", "name": "B4 - Differential Expression", "script": "stepB4_differential_expression.py", "summary": "DE evidence proxy via Europe PMC keywords.", "outputs": ["track_b/stepB4_differential_expression.csv"], "apis": ["Europe PMC"]},
             {"id": "stepB5", "name": "B5 - Pathway Relevance", "script": "stepB5_pathway.py", "summary": "Reactome pathway overlap with seed module.", "outputs": ["track_b/stepB5_pathway_enrichment.csv"], "apis": ["mygene"]},
             {"id": "stepB6", "name": "B6 - Genetic Support", "script": "stepB6_genetic_support.py", "summary": "Association scores from Step 2 for candidates.", "outputs": ["track_b/stepB6_genetic_support.csv"]},

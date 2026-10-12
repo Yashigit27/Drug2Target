@@ -66,6 +66,34 @@ track_b:
     literature_weak_support: 0.09
     druggability: 0.10
     tissue_relevance: 0.10
+  # B3 coexpression / tissue expression
+  # provider: hybrid (GTEx if file present, else STRING) | gtex_tissue | string_proxy
+  b3:
+    provider: hybrid
+    gtex_median_path: data/external/gtex/gene_median_tpm.gct.gz
+    expression_weight: 0.7
+    string_proxy_weight: 0.3
+    default_tissue: brain
+    # GTEx v11 column names use underscores (e.g. Brain_Cortex)
+    tissue_map:
+      brain: "Brain_Cortex"
+      cortex: "Brain_Cortex"
+      liver: "Liver"
+      hepatic: "Liver"
+      blood: "Whole_Blood"
+      lung: "Lung"
+      heart: "Heart_Left_Ventricle"
+      kidney: "Kidney_Cortex"
+      muscle: "Muscle_Skeletal"
+      skin: "Skin_Sun_Exposed_Lower_leg"
+      pancreas: "Pancreas"
+      adipose: "Adipose_Subcutaneous"
+      colon: "Colon_Transverse"
+      stomach: "Stomach"
+      thyroid: "Thyroid"
+      nerve: "Nerve_Tibial"
+      spleen: "Spleen"
+      pituitary: "Pituitary"
 
 # Tissue-context filter (literature + mygene summary)
 tissue_filter:

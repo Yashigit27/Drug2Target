@@ -30,7 +30,8 @@ def _final_outputs(_wildcards):
 
 def _run_cli(*args: str) -> None:
     cmd = [sys.executable, "-m", "src.cli", *args]
-    print("Running:", " ".join(cmd))
+    print("Running:", " ".join(cmd), flush=True)
+    # Inherit stdout so web snakemake_runner can stream progress live
     subprocess.run(cmd, check=True)
 
 

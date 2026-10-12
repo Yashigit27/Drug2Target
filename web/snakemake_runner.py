@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import yaml
 
@@ -49,9 +50,15 @@ def run_snakemake_pipeline(
     params: dict[str, Any],
     *,
     approach: str = "both",
-    cores: int = 2,
-    log_fn=None,
+    cores: int = 1,
+    log_fn: Callable[[str], None] | None = None,
 ) -> None:
+    """
+    Run Snakemake and stream logs line-by-line (so the UI does not look stuck).
+
+    Default cores=1: Track A then Track B sequentially — fewer parallel API
+    collisions (mygene/Europe PMC) than cores=2.
+    """
     cfg_path = write_runtime_config(run_id, params, approach=approach)
     cmd = [
         sys.executable,
@@ -64,19 +71,22 @@ def run_snakemake_pipeline(
     ]
     if log_fn:
         log_fn(f"Snakemake: {' '.join(cmd)}")
-    proc = subprocess.run(
+
+    env = {**os.environ, "PYTHONUNBUFFERED": "1"}
+    proc = subprocess.Popen(
         cmd,
         cwd=str(repo_root()),
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
-        check=False,
+        bufsize=1,
+        env=env,
     )
-    if proc.stdout and log_fn:
-        for line in proc.stdout.splitlines():
-            log_fn(line)
-    if proc.stderr and log_fn:
-        for line in proc.stderr.splitlines():
-            if line.strip():
-                log_fn(line)
-    if proc.returncode != 0:
-        raise RuntimeError(proc.stderr or proc.stdout or "Snakemake failed")
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        msg = line.rstrip()
+        if msg and log_fn:
+            log_fn(msg)
+    code = proc.wait()
+    if code != 0:
+        raise RuntimeError(f"Snakemake failed (exit {code}). See log above.")

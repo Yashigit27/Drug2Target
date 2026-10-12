@@ -79,6 +79,39 @@ class TrackAConfig(BaseModel):
     crowded_extreme_quantile: float = 0.95
 
 
+class B3CoexpressionConfig(BaseModel):
+    """Track B step B3 — tissue expression / coexpression proxy providers."""
+
+    # string_proxy | gtex_tissue | hybrid
+    provider: str = "hybrid"
+    gtex_median_path: str = "data/external/gtex/gene_median_tpm.gct.gz"
+    expression_weight: float = 0.7
+    string_proxy_weight: float = 0.3
+    default_tissue: str = "brain"
+    tissue_map: dict[str, str] = Field(
+        default_factory=lambda: {
+            "brain": "Brain_Cortex",
+            "cortex": "Brain_Cortex",
+            "liver": "Liver",
+            "hepatic": "Liver",
+            "blood": "Whole_Blood",
+            "lung": "Lung",
+            "heart": "Heart_Left_Ventricle",
+            "kidney": "Kidney_Cortex",
+            "muscle": "Muscle_Skeletal",
+            "skin": "Skin_Sun_Exposed_Lower_leg",
+            "pancreas": "Pancreas",
+            "adipose": "Adipose_Subcutaneous",
+            "colon": "Colon_Transverse",
+            "stomach": "Stomach",
+            "thyroid": "Thyroid",
+            "nerve": "Nerve_Tibial",
+            "spleen": "Spleen",
+            "pituitary": "Pituitary",
+        }
+    )
+
+
 class TrackBConfig(BaseModel):
     enabled: bool = True
     seed_top_n: int = 60
@@ -96,6 +129,7 @@ class TrackBConfig(BaseModel):
             "tissue_relevance": 0.10,
         }
     )
+    b3: B3CoexpressionConfig = Field(default_factory=B3CoexpressionConfig)
 
 
 class TissueFilterConfig(BaseModel):

@@ -265,10 +265,12 @@
         if (isRunning) cls = "running";
         else if (isDone) cls = "done";
         const icon = isDone ? "OK" : isRunning ? ".." : i + 1;
-        const extra =
-          s.id === "step2" && st?.literature
-            ? `<span class="step-extra">${st.literature}</span>`
-            : "";
+        const badges = [];
+        if (s.id === "step2" && st?.literature) badges.push(st.literature);
+        if (s.id === "stepB3" && st?.b3_note) badges.push(st.b3_note);
+        const extra = badges
+          .map((t) => `<span class="step-extra">${t}</span>`)
+          .join("");
         return `<div class="step-row ${cls}" data-step="${s.id}">
           <div class="step-dot">${icon}</div>
           <div class="step-info">

@@ -337,7 +337,8 @@ def start_job(
                     run_id,
                     merged,
                     approach=approach or "both",
-                    cores=2,
+                    # Sequential rules: fewer parallel public-API collisions
+                    cores=1,
                     log_fn=lambda m: _log(job, m, log_writer),
                 )
                 job.status = "completed"
