@@ -268,6 +268,7 @@
         const badges = [];
         if (s.id === "step2" && st?.literature) badges.push(st.literature);
         if (s.id === "stepB3" && st?.b3_note) badges.push(st.b3_note);
+        if (s.id === "stepB9" && st?.b9_note) badges.push(st.b9_note);
         const extra = badges
           .map((t) => `<span class="step-extra">${t}</span>`)
           .join("");

@@ -112,6 +112,19 @@ class B3CoexpressionConfig(BaseModel):
     )
 
 
+class B9TractabilityConfig(BaseModel):
+    """Track B step B9 — structure / druggability / safety readiness."""
+
+    # defaults | ot_tractability | hybrid (OT + optional PDBe)
+    provider: str = "hybrid"
+    use_pdbe: bool = True
+    structure_weight: float = 0.4
+    druggability_weight: float = 0.4
+    safety_weight: float = 0.2
+    # Max candidates to query (same ballpark as B1 top list)
+    max_genes: int = 200
+
+
 class TrackBConfig(BaseModel):
     enabled: bool = True
     seed_top_n: int = 60
@@ -130,6 +143,7 @@ class TrackBConfig(BaseModel):
         }
     )
     b3: B3CoexpressionConfig = Field(default_factory=B3CoexpressionConfig)
+    b9: B9TractabilityConfig = Field(default_factory=B9TractabilityConfig)
 
 
 class TissueFilterConfig(BaseModel):

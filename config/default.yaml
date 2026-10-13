@@ -94,6 +94,15 @@ track_b:
       nerve: "Nerve_Tibial"
       spleen: "Spleen"
       pituitary: "Pituitary"
+  # B9 tractability / structure / safety
+  # provider: hybrid (OT + PDBe) | ot_tractability | defaults
+  b9:
+    provider: hybrid
+    use_pdbe: true
+    structure_weight: 0.4
+    druggability_weight: 0.4
+    safety_weight: 0.2
+    max_genes: 200
 
 # Tissue-context filter (literature + mygene summary)
 tissue_filter:

@@ -14,8 +14,12 @@ query TargetProfile($id:String!){
   target(ensemblId:$id){
     id
     approvedSymbol
+    isEssential
     tractability { label modality value }
     proteinIds { id source }
+    chemicalProbes { id }
+    safetyLiabilities { event }
+    geneticConstraint { constraintType oe score }
   }
 }
 """
@@ -34,6 +38,12 @@ def europepmc_hit_count(client: httpx.Client, *, disease_label: str, gene_symbol
 
 
 def fetch_target_profile(client: httpx.Client, *, ensembl_id: str) -> dict[str, Any]:
+    """
+    Open Targets target annotation used by Track A (A1) and Track B (B9).
+
+    Note: Platform GraphQL no longer exposes target.knownDrugs; chemicalProbes
+    + tractability Approved Drug flags cover chemical/clinical precedent.
+    """
     url = load_config().open_targets.graphql_url
     r = client.post(
         url,
@@ -51,6 +61,10 @@ def fetch_target_profile(client: httpx.Client, *, ensembl_id: str) -> dict[str, 
         "approved_symbol": t.get("approvedSymbol"),
         "protein_ids": t.get("proteinIds") or [],
         "tractability_flags": {},
+        "is_essential": bool(t.get("isEssential")) if t.get("isEssential") is not None else None,
+        "chemical_probe_count": len(t.get("chemicalProbes") or []),
+        "safety_liability_count": len(t.get("safetyLiabilities") or []),
+        "genetic_constraint": t.get("geneticConstraint") or [],
     }
     flags: dict[str, bool] = {}
     for row in tract:

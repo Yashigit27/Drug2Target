@@ -54,7 +54,7 @@ PIPELINE_LAYERS = [
             {"id": "stepB6", "name": "B6 - Genetic Support", "script": "stepB6_genetic_support.py", "summary": "Association scores from Step 2 for candidates.", "outputs": ["track_b/stepB6_genetic_support.csv"]},
             {"id": "stepB7", "name": "B7 - Network Priority", "script": "stepB7_network_prioritization.py", "summary": "Centrality + proximity on disease-module graph.", "outputs": ["track_b/stepB7_network_prioritization.csv"]},
             {"id": "stepB8", "name": "B8 - Novelty", "script": "stepB8_novelty.py", "summary": "Low literature frequency gives higher novelty.", "outputs": ["track_b/stepB8_novelty.csv"], "apis": ["Europe PMC"]},
-            {"id": "stepB9", "name": "B9 - Druggability", "script": "stepB9_safety_druggability.py", "summary": "Safety/druggability baseline scores.", "outputs": ["track_b/stepB9_safety_druggability.csv"]},
+            {"id": "stepB9", "name": "B9 - Druggability", "script": "stepB9_safety_druggability.py", "summary": "OT tractability + PDBe structure + safety liabilities.", "outputs": ["track_b/stepB9_safety_druggability.csv"], "apis": ["Open Targets", "mygene", "PDBe"]},
             {"id": "stepB10", "name": "B10 - Final Rank", "script": "stepB10_rank.py", "summary": "Weighted fusion to ranked novel candidates.", "outputs": ["track_b/ranked_novel_candidates.csv"]},
         ],
     },

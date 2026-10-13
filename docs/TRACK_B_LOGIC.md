@@ -232,23 +232,27 @@ Future upgrade:
 ---
 
 ## B9 — Safety + Druggability + Structure
-Script: `src/stepB9_safety_druggability.py`
+Script: `src/stepB9_safety_druggability.py`  
+Helpers: `src/lib/tractability/` (`b9.py`, `scoring.py`, `pdbe.py`, `defaults.py`)
 
 Scientific idea:
 - Novel target should still be tractable/safe enough for CADD.
 
-Current implementation:
-- Conservative baseline readiness scores per candidate:
-  - `structure_availability_score`
-  - `druggability_score`
-  - `safety_score`
-  - combined `b9_readiness_score`
+Implementation (config `track_b.b9.provider`):
+1. **hybrid** (default): mygene symbol→Ensembl → Open Targets tractability /
+   chemicalProbes / safetyLiabilities / isEssential / LoF constraint, plus
+   optional **PDBe** experimental structure via UniProt accession.
+2. **ot_tractability**: Open Targets only (no PDBe).
+3. **defaults**: legacy constant scores (fallback on API failure).
+
+Notes:
+- Current OT GraphQL has no `target.knownDrugs`; Approved Drug tractability
+  flags + `chemicalProbes` cover chemical/clinical precedent.
+- AlphaFold presence is intentionally not used (too common to rank).
 
 Output:
-- `stepB9_safety_druggability.csv`
-
-Future upgrade:
-- Ensembl mapping + Open Targets tractability + PDB/AlphaFold checks.
+- `stepB9_safety_druggability.csv` (`b9_readiness_score` for B10)
+- `stepB9_summary.json` (UI badge provenance)
 
 ---
 
