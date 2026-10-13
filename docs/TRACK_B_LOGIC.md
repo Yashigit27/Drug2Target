@@ -96,7 +96,7 @@ Implementation:
 1. Collect seed + candidate symbols.
 2. Fetch annotations from mygene:
    - GO BP IDs
-   - Reactome pathway IDs
+   - Reactome + KEGG pathway IDs
    - InterPro domain IDs
 3. Build union sets from seeds.
 4. For each candidate compute:
@@ -159,14 +159,22 @@ Future upgrade:
 Script: `src/stepB5_pathway.py`
 
 Scientific idea:
-- Candidates inside disease-relevant pathways gain support.
+- Candidates inside pathways that recur among known disease genes gain support.
 
 Implementation:
-1. Build seed pathway universe from mygene Reactome IDs.
-2. For each candidate compute:
-   - `candidate_pathway_count`
-   - `pathway_overlap_count`
-   - `pathway_relevance_score = overlap / candidate_pathway_count`
+1. Annotate seeds + candidates via mygene (**Reactome + KEGG** pathway IDs).
+2. Count how many seeds carry each pathway (`seed_pathway_count`).
+3. Keep **recurrent** pathways (seen in ≥2 seeds) as the disease pathway set
+   (fallback to all seed pathways if too few).
+4. For each candidate:
+   - `candidate_pathway_count` — number of pathway IDs on the gene
+   - `pathway_overlap_count` — overlap with the disease pathway set
+   - `pathway_support_raw` — frequency-weighted overlap  
+     (`sum(seed_count[p] for shared p) / n_seeds_with_pathways`)
+   - `pathway_relevance_score` — min-max of `pathway_support_raw` (B10 contract)
+
+This is a lightweight enrichment proxy: pathways shared by more seeds weigh more.
+Full hypergeometric ORA (g:Profiler / Enrichr-style) remains a future upgrade.
 
 Output:
 - `stepB5_pathway_enrichment.csv`
@@ -292,7 +300,7 @@ End-to-end:
 - B2: functional similarity ✅
 - B3: coexpression (proxy now, matrix-based later) ✅
 - B4: differential expression (literature proxy now) ✅
-- B5: pathway relevance ✅
+- B5: pathway relevance (Reactome+KEGG, frequency-weighted) ✅
 - B6: genetic support ✅
 - B7: network prioritization ✅
 - B8: novelty filter ✅

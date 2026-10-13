@@ -65,7 +65,10 @@ def mygene_annotations(symbols: list[str]) -> dict[str, dict[str, Any]]:
             mg,
             batch,
             scopes="symbol",
-            fields="symbol,ensembl.gene,go.BP.id,pathway.reactome.id,interpro.id",
+            fields=(
+                "symbol,ensembl.gene,go.BP.id,"
+                "pathway.reactome.id,pathway.kegg.id,interpro.id"
+            ),
             species="human",
             as_dataframe=False,
             verbose=False,
@@ -80,11 +83,18 @@ def mygene_annotations(symbols: list[str]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def pathway_ids_from_annotation(row: dict[str, Any] | None) -> set[str]:
+    """Reactome + KEGG pathway IDs from a mygene annotation row."""
+    if not row:
+        return set()
+    return extract_id_set(row.get("pathway"), "id")
+
+
 def extract_id_set(payload: object, key: str) -> set[str]:
     """
     Extract ids from mygene nested fields for keys like:
     - go.BP.id
-    - pathway.reactome.id
+    - pathway.reactome.id / pathway.kegg.id
     - interpro.id
     """
     if payload is None:
