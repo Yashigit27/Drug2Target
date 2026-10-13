@@ -103,6 +103,41 @@ def _step_b3_note(base: Path) -> str | None:
         return None
 
 
+def _step_b9_note(base: Path) -> str | None:
+    """Human label: OT/PDBe tractability vs defaults for Track B step B9."""
+    summary_path = base / "artifacts" / "track_b" / "stepB9_summary.json"
+    if summary_path.is_file():
+        try:
+            data = json.loads(summary_path.read_text(encoding="utf-8"))
+            label = data.get("label")
+            if label:
+                return str(label)
+            if data.get("used_ot"):
+                return "B9: Open Targets tractability"
+            return "B9: defaults only (no OT data)"
+        except Exception:
+            pass
+    csv_path = base / "artifacts" / "track_b" / "stepB9_safety_druggability.csv"
+    if not csv_path.is_file():
+        return None
+    try:
+        import pandas as pd
+
+        df = pd.read_csv(csv_path, usecols=lambda c: c in ("b9_method", "b9_readiness_score"))
+        if "b9_method" not in df.columns:
+            # Legacy constant-score file
+            if "b9_readiness_score" in df.columns and df["b9_readiness_score"].nunique(dropna=True) <= 1:
+                return "B9: legacy constants"
+            return "B9: legacy (no method column)"
+        counts = df["b9_method"].astype(str).value_counts().to_dict()
+        real = int(counts.get("hybrid", 0)) + int(counts.get("ot_tractability", 0))
+        if real > 0:
+            return f"B9: OT tractability — {real}/{len(df)} genes"
+        return "B9: defaults only (no OT data)"
+    except Exception:
+        return None
+
+
 def run_status(run_id: str) -> dict[str, Any]:
     base = run_dir(run_id)
     if not base.is_dir():
@@ -147,6 +182,10 @@ def run_status(run_id: str) -> dict[str, Any]:
                 b3_note = _step_b3_note(base)
                 if b3_note:
                     entry["b3_note"] = b3_note
+            if step["id"] == "stepB9" and done:
+                b9_note = _step_b9_note(base)
+                if b9_note:
+                    entry["b9_note"] = b9_note
             step_status.append(entry)
 
     manifest_data: dict[str, Any] | None = None
