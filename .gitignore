@@ -11,7 +11,15 @@ outputs/*/
 !outputs/.gitkeep
 data/raw/*
 !data/raw/.gitkeep
+data/external/de/*
+!data/external/de/.gitkeep
+!data/external/de/README.md
+!data/external/de/SOURCE.txt
 data/external/gtex/*
+data/external/string/*
+!data/external/string/.gitkeep
+!data/external/string/README.md
+!data/external/string/SOURCE.txt
 !data/external/gtex/.gitkeep
 !data/external/gtex/README.md
 !data/external/gtex/SOURCE.txt

@@ -84,6 +84,11 @@ def build_evidence_card(run_id: str, gene: str) -> dict[str, Any]:
         n7 = _row_for_gene(b7, gene_u, "candidate_gene_symbol")
         if n7:
             card["network"]["prioritization_score"] = n7.get("network_prioritization_score")
+            card["network"]["mean_distance_to_seeds"] = n7.get("mean_distance_to_seeds", "")
+            card["network"]["mean_link_strength"] = n7.get("mean_link_strength", "")
+            card["network"]["string_degree"] = n7.get("string_degree", "")
+            card["network"]["proximity_z"] = n7.get("proximity_z", "")
+            card["network"]["betweenness"] = n7.get("betweenness", "")
 
     summary_path = step_f1_summary_path(run_id)
     if summary_path.is_file():

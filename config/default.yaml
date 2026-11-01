@@ -59,13 +59,15 @@ track_b:
   string_partners_per_seed: 40
   top_candidates_for_scoring: 180
   final_ranking_weights:
-    network_support: 0.22
-    pathway_relevance: 0.18
-    expression_evidence: 0.18
-    coexpression: 0.13
-    literature_weak_support: 0.09
-    druggability: 0.10
-    tissue_relevance: 0.10
+    network_support: 0.20
+    pathway_relevance: 0.14
+    expression_evidence: 0.16
+    coexpression: 0.10
+    functional_similarity: 0.08
+    genetic_support: 0.08
+    literature_weak_support: 0.08
+    druggability: 0.08
+    tissue_relevance: 0.08
   # B3 coexpression / tissue expression
   # provider: hybrid (GTEx if file present, else STRING) | gtex_tissue | string_proxy
   b3:
@@ -94,6 +96,40 @@ track_b:
       nerve: "Nerve_Tibial"
       spleen: "Spleen"
       pituitary: "Pituitary"
+  # B4 differential expression. One saved contrast per disease id + tissue group.
+  # A disease with no row scores 0.5 (neutral), not zero.
+  b4:
+    default_tissue: brain
+    min_abs_log2fc: 0.5
+    max_pvalue: 0.05
+    tissue_group:
+      brain: [brain, cortex, nigra, substantia, hippocampus, hippocampal, frontal, gyrus, midbrain]
+      liver: [liver, hepatic]
+      blood: [blood]
+    contrasts:
+      # Parkinson substantia nigra, 16 disease vs 9 healthy (GSE7621).
+      - disease_id: MONDO_0005180
+        tissue: brain
+        study: GSE7621
+        file: data/external/de/E-GEOD-7621.tsv
+        contrast: g1_g2
+      # Alzheimer superior frontal gyrus vs healthy (GSE5281). Same file
+      # for the late-onset id Step 1 selects when that subtype is typed.
+      - disease_id: MONDO_0004975
+        tissue: brain
+        study: GSE5281
+        file: data/external/de/E-GEOD-5281.tsv
+        contrast: g12_g6
+      - disease_id: EFO_1001870
+        tissue: brain
+        study: GSE5281
+        file: data/external/de/E-GEOD-5281.tsv
+        contrast: g12_g6
+  # B7 hub check. Build once: python -m src.lib.track_b.string_background
+  b7:
+    string_db: data/external/string/9606.string.sqlite
+    n_random: 100
+    degree_window: 0.2
   # B9 tractability / structure / safety
   # provider: hybrid (OT + PDBe) | ot_tractability | defaults
   b9:

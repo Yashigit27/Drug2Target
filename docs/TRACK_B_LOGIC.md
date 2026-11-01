@@ -105,6 +105,7 @@ Implementation:
    - domain Jaccard
 5. Weighted functional score:
    - GO 0.4, pathway 0.4, domain 0.2
+6. B10 reads `functional_similarity_score` at weight 0.08. Overlap with the pooled terms of every known gene is a very small fraction, so B10 rescales it across the candidate list before weighting. The raw Jaccard stays in the B2 file.
 
 Output:
 - `stepB2_functional_similarity.csv`
@@ -137,21 +138,26 @@ Future upgrade:
 ---
 
 ## B4 — Differential Expression
-Script: `src/stepB4_differential_expression.py`
+Script: `src/stepB4_differential_expression.py`  
+Helpers: `src/lib/expression/de_contrast.py`, `src/lib/expression/de_select.py`
 
 Scientific idea:
-- Dysregulated genes in disease tissue are prioritized.
+- A gene whose level changes in disease tissue versus healthy tissue is prioritized.
+- Both directions count. The sign is kept in `log2_fold_change`.
 
-Current implementation (proxy):
-1. For each candidate, query Europe PMC hitCount for:
-   - disease + gene + (upregulated/downregulated/overexpression/underexpression)
-2. Log-normalize counts to `differential_expression_score`.
+Implementation (config `track_b.b4`):
+1. Read the disease id already chosen in Step 1, and map the tissue onto a small group (`brain`, `liver`, `blood`).
+2. Look up one saved contrast for that pair, in `config/default.yaml` or `data/external/de/pinned.json`. The subtype is not a separate file: it only matters when Step 1 selected a different disease id.
+3. When nothing is saved, search Expression Atlas for human differential studies of that disease and tissue. Keep comparisons of disease versus healthy. Skip files that are not a gene / fold-change / p-value table, whatever their name. Rank the rest by how many genes change, and prefer a tissue study over a cell or organoid model. Save the winner and reuse it.
+4. Score a measured gene from its fold change and p-value. Adjusted p is used when the file has it.
+   - Not a real change (p above 0.05, or absolute log2 fold change below 0.5): score 0.
+   - A real change: absolute log2 fold change / 2, capped at 1. A 4-fold change scores 1.
+5. A gene absent from the table scores 0.5 (`not_measured`). A disease with no usable study scores 0.5 for every candidate (`no_contrast`). Zero means “measured and unchanged,” not “no file.”
+
+Saved tables live in `data/external/de/`. See that folder’s `SOURCE.txt`.
 
 Output:
-- `stepB4_differential_expression.csv`
-
-Future upgrade:
-- Integrate real DE tables from GEO/TCGA contrasts.
+- `stepB4_differential_expression.csv` (`differential_expression_score` is the B10 column)
 
 ---
 
@@ -191,6 +197,7 @@ Current implementation:
 1. Reuse disease association evidence from Step2 merged table.
 2. Map candidate symbols to max `association_score` if present.
 3. Min-max normalize to `genetic_support_score`.
+4. B10 reads that score at weight 0.08. A candidate with no association stays at 0, so direct genetic evidence lifts a gene above an otherwise similar neighbor.
 
 Output:
 - `stepB6_genetic_support.csv`
@@ -204,19 +211,28 @@ Future upgrade:
 Script: `src/stepB7_network_prioritization.py`
 
 Scientific idea:
-- Central/proximal module nodes are stronger disease hypotheses.
+- A candidate inside the known-disease gene group is a stronger hypothesis than a gene hanging off one known gene.
 
 Implementation:
-1. Build graph from B1 candidate supports (hub-linked representation).
-2. Compute:
-   - `proximity_to_seed`
-   - `betweenness`
-   - `closeness`
-3. Combined:
-   - `network_prioritization_score = 0.5*proximity + 0.25*betweenness + 0.25*closeness`
+1. Read B1 candidates and the real seed–candidate STRING links.
+2. Ask STRING once for the other links among those genes (known–known and candidate–candidate), at the same score cutoff as B1.
+3. Build that map. No synthetic hub.
+4. For each candidate, average its direct STRING score to every known disease gene. A missing link counts as 0. This is `mean_link_strength`. Hop distance is still saved, but it is not the rank: at the usual cutoff many genes are one hop away, so hops stop separating them.
+5. Bridge score: fraction of shortest paths between known disease genes that pass through the candidate. This stays 0 when the known genes are already linked to each other.
+6. Combined, when the saved human STRING database is missing:
+   - `network_prioritization_score = 0.75 * mean_link_strength + 0.25 * bridge`
+7. When `data/external/string/9606.string.sqlite` is present, compare that attachment with about 100 ordinary proteins that have a similar partner count. `proximity_z` above 0 means the fit is stronger than those ordinary proteins. The rank uses that z-score in place of raw link strength: a typical protein of the same partner count scores 0.5, and a stronger fit scores higher without giving every clear fit the same number. A protein that touches almost everything drops unless this disease set is a special match.
 
 Output:
 - `stepB7_network_prioritization.csv`
+  - `mean_distance_to_seeds`
+  - `mean_link_strength`
+  - `string_degree`
+  - `proximity_z`
+  - `betweenness`
+  - `network_prioritization_score`
+
+Build the background once: `python -m src.lib.track_b.string_background`
 
 ---
 
@@ -271,14 +287,17 @@ Scientific idea:
 - Fuse orthogonal evidence into final novel candidate ranking.
 
 Implementation:
-1. Merge outputs from B2/B3/B4/B5/B7/B8/B9.
+1. Merge outputs from B2, B3, B4, B5, B6, B7, B8, and B9.
 2. Compute weighted final score using `track_b.final_ranking_weights`:
-   - network support
-   - pathway relevance
-   - expression evidence
-   - coexpression
-   - literature weak support (novelty)
-   - druggability
+   - network support (B7)
+   - pathway relevance (B5)
+   - expression evidence (B4)
+   - coexpression (B3)
+   - functional similarity (B2)
+   - genetic support (B6)
+   - literature weak support (novelty, B8)
+   - druggability (B9)
+   - tissue relevance
 3. Save rank + score breakdown + reason string.
 
 Output:
@@ -303,7 +322,7 @@ End-to-end:
 - B1: network expansion ✅
 - B2: functional similarity ✅
 - B3: coexpression (proxy now, matrix-based later) ✅
-- B4: differential expression (literature proxy now) ✅
+- B4: differential expression (saved disease-vs-healthy contrast; neutral when none is pinned) ✅
 - B5: pathway relevance (Reactome+KEGG, frequency-weighted) ✅
 - B6: genetic support ✅
 - B7: network prioritization ✅

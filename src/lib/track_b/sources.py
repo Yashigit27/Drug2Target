@@ -10,6 +10,7 @@ from src.lib.track_a.sources import europepmc_hit_count, fetch_target_profile
 
 
 STRING_PARTNERS = "https://string-db.org/api/json/interaction_partners"
+STRING_NETWORK = "https://string-db.org/api/json/network"
 
 
 def string_interaction_partners(
@@ -31,6 +32,52 @@ def string_interaction_partners(
     )
     r.raise_for_status()
     return r.json() or []
+
+
+def string_network_edges(
+    client: httpx.Client,
+    identifiers: list[str],
+    *,
+    required_score: int = 400,
+) -> list[tuple[str, str, float]]:
+    """STRING links among this gene list, with combined score on a 0–1 scale."""
+    genes = []
+    seen: set[str] = set()
+    for raw in identifiers:
+        sym = str(raw).strip()
+        key = sym.upper()
+        if not sym or key in seen or key == "NAN":
+            continue
+        seen.add(key)
+        genes.append(sym)
+    if len(genes) < 2:
+        return []
+    r = client.post(
+        STRING_NETWORK,
+        data={
+            "identifiers": "\r".join(genes),
+            "species": 9606,
+            "required_score": required_score,
+            "caller_identity": "d2t",
+        },
+        timeout=120.0,
+    )
+    r.raise_for_status()
+    payload = r.json() or []
+    if not isinstance(payload, list):
+        return []
+    edges: list[tuple[str, str, float]] = []
+    for row in payload:
+        a = str(row.get("preferredName_A") or "").strip().upper()
+        b = str(row.get("preferredName_B") or "").strip().upper()
+        if not a or not b or a == b:
+            continue
+        score = float(row.get("score") or 0.0)
+        if score > 1:
+            score = score / 1000.0
+        left, right = sorted((a, b))
+        edges.append((left, right, score))
+    return edges
 
 
 def _querymany_with_retry(mg: mygene.MyGeneInfo, batch: list[str], **kwargs: Any) -> list:

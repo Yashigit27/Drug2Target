@@ -112,6 +112,54 @@ class B3CoexpressionConfig(BaseModel):
     )
 
 
+class B4ContrastConfig(BaseModel):
+    """One saved disease-versus-healthy comparison."""
+
+    disease_id: str
+    tissue: str
+    study: str
+    file: str
+    # Column prefix when the file holds several comparisons, e.g. g1_g2.
+    contrast: str | None = None
+    pass_count: int | None = None
+    n_samples: int | None = None
+    tissue_label: str | None = None
+
+
+class B4ExpressionConfig(BaseModel):
+    """Track B step B4 — saved differential expression contrasts."""
+
+    default_tissue: str = "brain"
+    min_abs_log2fc: float = 0.5
+    max_pvalue: float = 0.05
+    tissue_group: dict[str, list[str]] = Field(
+        default_factory=lambda: {
+            "brain": [
+                "brain",
+                "cortex",
+                "nigra",
+                "substantia",
+                "hippocampus",
+                "hippocampal",
+                "frontal",
+                "gyrus",
+                "midbrain",
+            ],
+            "liver": ["liver", "hepatic"],
+            "blood": ["blood"],
+        }
+    )
+    contrasts: list[B4ContrastConfig] = Field(default_factory=list)
+
+
+class B7NetworkConfig(BaseModel):
+    """Track B step B7 — saved human STRING network for the hub check."""
+
+    string_db: str = "data/external/string/9606.string.sqlite"
+    n_random: int = 100
+    degree_window: float = 0.2
+
+
 class B9TractabilityConfig(BaseModel):
     """Track B step B9 — structure / druggability / safety readiness."""
 
@@ -133,16 +181,20 @@ class TrackBConfig(BaseModel):
     top_candidates_for_scoring: int = 180
     final_ranking_weights: dict[str, float] = Field(
         default_factory=lambda: {
-            "network_support": 0.22,
-            "pathway_relevance": 0.18,
-            "expression_evidence": 0.18,
-            "coexpression": 0.13,
-            "literature_weak_support": 0.09,
-            "druggability": 0.10,
-            "tissue_relevance": 0.10,
+            "network_support": 0.20,
+            "pathway_relevance": 0.14,
+            "expression_evidence": 0.16,
+            "coexpression": 0.10,
+            "functional_similarity": 0.08,
+            "genetic_support": 0.08,
+            "literature_weak_support": 0.08,
+            "druggability": 0.08,
+            "tissue_relevance": 0.08,
         }
     )
     b3: B3CoexpressionConfig = Field(default_factory=B3CoexpressionConfig)
+    b4: B4ExpressionConfig = Field(default_factory=B4ExpressionConfig)
+    b7: B7NetworkConfig = Field(default_factory=B7NetworkConfig)
     b9: B9TractabilityConfig = Field(default_factory=B9TractabilityConfig)
 
 
